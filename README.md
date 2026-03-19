@@ -2,31 +2,32 @@
 
 ## Project goal
 
-This project is a small proof of concept for incremental learning.
-
-The goal is to show how a machine learning model can be updated as new batches of data arrive, instead of being trained once and then kept fixed forever. The current setup compares:
-
-- a **static model** trained once on the first batch
-- an **incremental model** trained on the first batch and then updated batch by batch using `partial_fit()`
-
-## Why this matters
+This repository began as a baseline for incremental learning on sequentially arriving data.
+It is now being extended toward a proof of concept for communication-efficient collaborative learning, where only parts of a neural network may be transferred between nodes instead of sending full models.
 
 Traditional batch learning assumes that all training data is available upfront. In many real-world settings, this is not true. New data may arrive over time, and retraining from scratch every time may be inefficient or impractical.
 
-This PoC explores whether a model can adapt to newly introduced data through incremental updates.
+This project explores whether a model can adapt to newly introduced data through incremental updates. It will also explore efficiency of partial neural network transfer between nodes in collaborative setting.
 
-## Current experiment setup
+## Hypothesis
 
-The experiment uses a binary classification task on a synthetic dataset.
+Selective transfer of only part of a neural network may preserve a useful portion of the performance gains of collaborative updating, while reducing communication cost compared with full-model transfer.
 
-The workflow is:
+## Current baseline experiment
 
-1. Generate or prepare the dataset
-2. Split training data into sequential batches
-3. Train both models on batch 1 using `fit()`
-4. Keep the static model frozen
-5. Update the incremental model on later batches using `partial_fit()`
-6. Evaluate both models on the same held-out test set after each batch
+The current implementation uses a binary classification task on a synthetic dataset to compare:
+- a static baseline model trained once on batch 1
+- an incremental baseline model updated on later batches
+
+This stage is intended to validate the mechanics of sequential updating before moving to neural-network-based collaborative experiments.
+
+## Planned research progression
+
+- Baseline A: static vs incremental learning on batches
+- Baseline B: neural-network continual update on sequential batches
+- Experiment C: two-client collaborative setup
+- Experiment D: partial model transfer vs full model transfer
+- Measure: task performance and estimated transmitted parameter count
 
 ## Models used
 
@@ -46,14 +47,18 @@ The models are compared using:
 
 The main focus is on how performance changes across batches.
 
+## Research question
+
+Can partial neural-network transfer in a collaborative learning setting reduce communication cost while preserving adaptation performance on sequentially arriving data?
+
 ## Current findings
 
 At the current stage, the experiment shows that:
 
-- the static model remains unchanged after batch 1, as expected
-- the incremental model changes as new batches are introduced
-- after aligning both models to start from the same batch-1 training point, the incremental model performs better than the frozen static baseline on later batches in this setup
-- performance does **not** improve monotonically with every batch, so the results should not be interpreted as “the model always gets better”
+- The static model remains unchanged after batch 1, as expected
+- tThe incremental model changes as new batches are introduced
+- When both models start from the same batch-1 training point, the incrementally updated model outperforms the frozen baseline on later batches in this setup
+- Performance does **not** improve monotonically with every batch, so the results should not be interpreted as “the model always gets better”
 
 The main takeaway so far is that incremental updating works technically and produces meaningfully different behavior from a static baseline.
 
@@ -72,18 +77,16 @@ Because of that, this PoC currently demonstrates the **mechanics** of incrementa
 
 ## Data
 
-For this project these datasets were used:
+Current dataset:
 - [Machine Failure Prediction using Sensor data](https://www.kaggle.com/datasets/umerrtx/machine-failure-prediction-using-sensor-data/data)
 
 ## Next steps
 
-Possible next improvements:
-
-- introduce concept drift
-- test on a more realistic dataset
-- compare additional incremental models
-- improve project structure and reproducibility
-- add a clearer experimental summary for supervisor review
+- replace the linear baseline with a small neural network baseline
+- simulate two collaborative clients/nodes with sequential local updates
+- define a communication-cost proxy using parameter counts
+- compare full-model transfer against partial-layer transfer
+- evaluate the trade-off between predictive performance and communication cost
 
 ## Project structure
 
