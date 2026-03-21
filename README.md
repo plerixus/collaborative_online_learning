@@ -153,6 +153,7 @@ collaborative_online_learning/
   notebooks/
     incremental_learning_baseline.ipynb
     mlp_sequential_baseline.ipynb
+    two-client_collaborative_setup.ipynb
   data/
     data.csv
   results/
