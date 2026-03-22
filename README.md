@@ -11,7 +11,8 @@ This project explores whether a model can adapt to newly introduced data through
 
 The repository already includes preliminary sequential experiments with an MLP, including a comparison between full transfer and output-layer-only transfer, together with a simple communication-cost proxy based on transmitted parameter counts.
 
-The repository now also includes a minimal two-client collaborative simulation comparing local-only learning, full-model transfer, and output-layer-only transfer under sequential local data arrival.
+The repository now also includes a minimal two-client collaborative simulation comparing local-only learning, full-model transfer, and output-layer-only transfer under sequential local data arrival. 
+Currently this repository also includes a seed-validation version of this two-client experiment to test whether the observed performance pattern is stable across multiple random initializations and data splits.
 
 ## Hypothesis
 
@@ -47,6 +48,8 @@ This is the first collaborative PoC used to compare predictive performance again
 - Remaining data split between two clients
 - Each client receives 3 sequential local batches
 - Communication cost approximated by transmitted parameter counts
+- Compared across multiple random seeds for robustness
+- Final-round performance summarized by mode using mean / variability across seeds
 
 
 ## Planned research progression
@@ -54,7 +57,7 @@ This is the first collaborative PoC used to compare predictive performance again
 - Baseline A: static vs incremental learning on batches
 - Baseline B: neural-network continual update on sequential batches
 - Experiment C: two-client collaborative setup
-- Next: richer partial-transfer strategies and repeated runs across seeds.
+- Next: richer partial-transfer strategies
 - Next: robustness under heterogeneous or drifting client data
 - Experiment D: partial model transfer vs full model transfer
 - Measure: task performance and estimated transmitted parameter count
@@ -85,11 +88,10 @@ At the current stage, the experiment shows that:
 - When both models start from the same batch-1 training point, the incrementally updated model outperforms the frozen baseline on later batches in this setup
 - Performance does **not** improve monotonically with every batch, so the results should not be interpreted as “the model always gets better”
 - In the MLP-based sequential experiments, different transfer strategies already show a measurable trade-off between predictive performance and estimated transfer cost. In particular, full transfer and output-layer-only transfer do not behave identically, which supports the broader research direction of selective neural-network transfer.
-- Full-model transfer produced the strongest improvement in initial two-client collaborative setup
-- Output-layer-only transfer remained close to local-only performance in initial two-client collaborative setup
-- Output-layer-only transfer greatly reduced communication cost relative to full transfer
-- This suggests a measurable performance-vs-communication trade-off, but naive head-only transfer may be too weak to recover most of the benefits of full collaboration- 
-The main takeaway so far is that incremental updating works technically and produces meaningfully different behavior from a static baseline.
+- In the initial two-client collaborative run, full-model transfer produced the strongest improvement.
+- After repeating the collaborative setup across multiple random seeds, full-model transfer still achieved the best mean final F1, but its advantage over local-only training was small and not consistent across all runs.
+- Output-layer-only transfer remained much cheaper in communication cost and sometimes matched or slightly exceeded local-only performance, but it did not show a stable advantage.
+- The clearest robust finding in the collaborative setup is the trade-off between predictive performance and communication cost, rather than a strongly stable ranking between all three strategies.
 
 ## Limitations
 
@@ -105,7 +107,8 @@ Main limitations:
 - Only one small dataset (~944 rows after cleaning)
 - Only one simple MLP architecture
 - Only one naive partial-transfer strategy (output layer only)
-- Results are based on an initial run and should be validated across multiple random seeds
+- Results have been checked across multiple random seeds, but the observed ranking between strategies is still somewhat unstable
+- The current collaborative evidence remains sensitive to seed because the setup is still small (2 clients, one dataset, one architecture, one simple partial-transfer rule)
 
 
 Because of that, this PoC currently demonstrates the **mechanics** of incremental learning more clearly than a full real-world advantage.
@@ -129,8 +132,8 @@ Current repository components include:
 
 ## Next steps
 
-- Repeat the two-client experiment across multiple random seeds
 - Test richer partial-transfer strategies beyond output-layer-only
+- Try transferring the last two layers or another compact intermediate strategy
 - Introduce stronger client heterogeneity
 - Evaluate under simulated concept drift
 - Compare communication/performance trade-offs more systematically
@@ -154,11 +157,15 @@ collaborative_online_learning/
     incremental_learning_baseline.ipynb
     mlp_sequential_baseline.ipynb
     two-client_collaborative_setup.ipynb
+    two-client_collaborative_seed_validation.ipynb
   data/
     data.csv
   results/
     two_client_all_results.csv
     two_client_summary.csv
+    two_client_seed_validation_all_rounds.csv
+    two_client_seed_validation_final_results.csv
+    two_client_seed_validation_summary.csv
 
 
 ```
