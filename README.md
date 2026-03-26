@@ -2,12 +2,12 @@
 
 ## Project goal
 
-This repository began as a baseline for incremental learning on sequentially arriving data.
-It is now being extended toward a proof of concept for communication-efficient collaborative learning, where only parts of a neural network may be transferred between nodes instead of sending full models.
+This repository began as a baseline study of incremental learning on sequentially arriving data.
+It has since been extended into a proof of concept for communication-efficient collaborative learning, where only part of a neural network may be transferred between nodes instead of exchanging full models.
 
-Traditional batch learning assumes that all training data is available upfront. In many real-world settings, this is not true. New data may arrive over time, and retraining from scratch every time may be inefficient or impractical.
+Traditional batch learning assumes that all training data is available upfront. In many practical settings, however, data arrives over time and may remain distributed across multiple nodes. In such cases, repeatedly retraining from scratch or exchanging full models may be inefficient.
 
-This project explores whether a model can adapt to newly introduced data through incremental updates. It also explores whether partial neural-network transfer between collaborating nodes can preserve much of the benefit of full-model transfer while reducing communication cost.
+This project studies whether partial neural-network transfer can preserve much of the benefit of collaborative updating while reducing communication cost.
 
 The repository currently includes:
 - Early sequential incremental-learning baselines
@@ -20,7 +20,7 @@ The repository currently includes:
   - `last_two_layers`
   - `full_transfer`
 
-The deeper collaborative experiment is currently the strongest evidence in the repository that richer partial transfer may be competitive with full transfer while using less communication.
+The deeper collaborative experiment currently provides the strongest support in the repository for the idea that richer partial transfer may remain competitive with full transfer while using less communication.
 
 ## Hypothesis
 
@@ -28,13 +28,13 @@ Selective transfer of only part of a neural network may preserve a useful portio
 
 ## Repository status
 
-This repository is an early-stage research proof of concept. It currently provides preliminary sequential and collaborative experiments that support a larger proposed study on communication-efficient collaborative learning with partial neural-network transfer.
+This repository is an early-stage research proof of concept. It contains preliminary sequential and collaborative experiments designed to support a broader study of communication-efficient collaborative learning with partial neural-network transfer.
 
-The repository does **not** implement a full distributed learning framework or a realistic production system. Instead, it is meant to show that:
+It does **not** implement a full distributed learning framework or a production-ready system. Instead, it is meant to show that:
 - Incremental adaptation on sequential data is working
 - Partial neural-network transfer is technically feasible in a small collaborative setup
 - Communication cost can be tracked explicitly
-- Richer partial-transfer strategies may retain much of the benefit of full transfer in some scenarios
+- Richer partial-transfer strategies may preserve much of the benefit of full transfer in some scenarios
 
 ## Current experiments
 
@@ -90,11 +90,14 @@ Main features:
 
 ## Experiment progression in this repository
 
-- Baseline A: static vs incremental learning on batches
-- Baseline B: sequential neural-network transfer on sequential batches
+- Baseline A: static vs incremental learning on sequential batches
+- Baseline B: sequential neural-network transfer
 - Experiment C: minimal two-client collaborative setup
 - Experiment D: deeper-MLP collaborative seed validation with richer partial-transfer modes
-- Main measurement: task performance and estimated transmitted parameter count
+
+Main comparison axis:
+- predictive performance
+- estimated transmitted parameter count
 
 
 ## Evaluation metrics
@@ -121,12 +124,9 @@ At the current stage, the experiments show that:
 - When both models start from the same batch-1 training point, the incrementally updated model outperforms the frozen baseline on later batches in this setup
 - Performance does **not** improve monotonically with every batch, so the results should not be interpreted as “the model always gets better”
 
-In the MLP-based sequential experiments, different transfer strategies already show a measurable trade-off between predictive performance and estimated transfer cost. In particular, full transfer and output-layer-only transfer do not behave identically, which supports the broader research direction of selective neural-network transfer.
+In the sequential MLP experiments, different transfer strategies already show a measurable trade-off between predictive performance and estimated transfer cost. In particular, full transfer and output-layer-only transfer do not behave identically, which supports the broader research direction of selective neural-network transfer.
 
-In the initial two-client collaborative experiments:
-- Full-model transfer produced the strongest result in the initial collaborative run
-- After repeating the setup across multiple random seeds, full transfer still achieved the best mean final F1, but its advantage over local-only training was small and not fully stable
-- Output-layer-only transfer remained much cheaper in communication cost, but did not show a stable advantage
+In the initial two-client collaborative experiments, full transfer produced the strongest mean final result, but its advantage over local-only training was small and not fully stable across seeds. Output-layer-only transfer remained much cheaper in communication cost, but did not show a stable advantage.
 
 The deeper-MLP collaborative experiment produced the strongest current result in the repository:
 - `full_transfer` achieved the highest mean final F1 (0.8778)
@@ -134,7 +134,7 @@ The deeper-MLP collaborative experiment produced the strongest current result in
 - `last_two_layers` did so at substantially lower transfer cost than `full_transfer` (870 vs 1830 mean cumulative transfer cost)
 - `last_layer_only` remained the cheapest communication-based transfer mode, but was generally weaker than `last_two_layers`
 
-The most defensible conclusion at this stage is not that one transfer rule is universally best, but that partial neural-network transfer can produce a meaningful performance-versus-communication trade-off that is worth studying further.
+The most defensible conclusion at this stage is not that one transfer rule is universally best, but that partial neural-network transfer can produce a meaningful performance-versus-communication trade-off worth studying further.
 
 
 ## Limitations
@@ -148,13 +148,12 @@ Main limitations:
 - There is no explicit concept drift yet
 - The setup simulates streamed data through batches rather than using a real streaming pipeline
 - The collaborative experiment currently uses only 2 clients
-- Only one small dataset (~944 rows after cleaning)
+- Only one small dataset (~944 rows after cleaning) has been used
 - Only one deeper MLP architecture has been tested in the richer partial-transfer setup
 - Only a small number of partial-transfer strategies have been tested so far
-- Results have been checked across multiple random seeds, but the ranking between strategies is still somewhat sensitive to seed
-- The current collaborative evidence is still based on a small setup (2 clients, one dataset, one main architecture family)
+- Results have been checked across multiple random seeds, but the ranking between strategies remains somewhat seed-sensitive
 
-Because of that, this PoC currently demonstrates the mechanics and plausibility of communication-efficient partial transfer more clearly than a full real-world advantage.
+Because of that, this PoC currently demonstrates the mechanics and plausibility of communication-efficient partial transfer more clearly than a strong real-world advantage.
 
 ## Data
 
@@ -189,10 +188,10 @@ The repository has moved beyond the first collaborative simulation stage and now
 
 This matters because the earlier collaborative setup could only compare:
 - `local_only`
-- A very small partial-transfer rule
-- Full transfer
+- a very small partial-transfer rule
+- `full_transfer`
 
-The deeper-MLP experiment adds a real intermediate condition (`last_two_layers`), which makes the project more aligned with the actual research question: whether transferring only part of a neural network can preserve much of the benefit of collaboration while reducing communication cost.
+The deeper-MLP experiment adds a real intermediate condition (`last_two_layers`), making the project more closely aligned with the actual research question: whether transferring only part of a neural network can preserve much of the benefit of collaboration while reducing communication cost.
 
 ## Project structure
 

@@ -1,4 +1,4 @@
-# Adaptive Collaborative Learning with Partial Neural-Network Transfer for Sequential Data Environments
+# Communication-Efficient Collaborative Learning Under Sequential Data Arrival via Partial Neural-Network Transfer
 
 ## Background
 Machine learning systems are often trained under the assumption that data is collected centrally and remains reasonably stable during training. In many realistic settings, however, data is distributed across multiple clients and arrives over time rather than being available all at once. This creates two linked challenges. First, collaborative or decentralized learning must cope with communication costs between participants. Second, the learning system must keep adapting as new data arrives without discarding useful earlier knowledge.
@@ -11,7 +11,7 @@ Many collaborative learning methods rely on repeated transfer of full model upda
 This project investigates whether the amount of transferred model information can be reduced without giving up too much adaptation performance. In particular, it asks whether transferring only selected parts of a neural network can preserve a meaningful portion of the benefit of collaborative adaptation while lowering communication cost.
 
 ## Research Question
-Can partial neural-network transfer in a collaborative learning setting improve adaptation to sequentially arriving data while reducing communication overhead?
+Can partial neural-network transfer in a collaborative learning setting reduce communication cost while preserving adaptation performance under sequentially arriving data?
 
 ## Sub-Questions
 - How does partial transfer compare with local-only or static learning under sequential data arrival?
@@ -20,27 +20,31 @@ Can partial neural-network transfer in a collaborative learning setting improve 
 - How robust are different transfer strategies under heterogeneous or changing data distributions?
 
 ## Hypothesis
-Selective transfer of only part of a neural network can retain a meaningful portion of the adaptation benefit of collaborative updating while reducing communication cost compared with full-model exchange.
+Selective transfer of only part of a neural network can preserve much of the adaptation benefit of collaborative updating while reducing communication cost compared with full-model exchange.
 
 ## Preliminary Work
-The repository already contains preliminary sequential-learning experiments that support the overall proposal direction. In particular, the current work includes an MLP-based sequential baseline, a comparison between full transfer and output-layer-only transfer, and a simple communication-cost proxy based on parameter counts. This is not yet a true collaborative multi-client experiment, but it already demonstrates that transfer strategies can be compared in terms of both predictive performance and estimated transfer cost.
+The repository already contains a preliminary collaborative learning proof of concept that supports the overall direction of this proposal. The project began with simpler sequential-learning experiments and then progressed toward neural-network transfer experiments with explicit communication-cost tracking. The current strongest stage uses a deeper two-client collaborative setup in which multiple transfer strategies can be compared directly.
 
-The value of this preliminary work is that it isolates the transfer question before introducing the additional complexity of a full collaborative setup. It therefore functions as evidence that the project is not only conceptual, but already supported by early empirical experimentation.
+At present, the implemented setup includes four transfer modes: `local_only`, `last_layer_only`, `last_two_layers`, and `full_transfer`. The experiments are evaluated using predictive metrics together with a communication-cost proxy based on transferred parameter counts. This allows the project to examine not only whether collaboration helps, but also whether intermediate transfer strategies can preserve useful performance while reducing communication cost.
+
+The current results are still small-scale and should be interpreted cautiously. However, they already provide more than a conceptual starting point: they show that the proposed research question can be explored empirically in a controlled collaborative setting.
+
+A useful preliminary result is that `full_transfer` achieved the strongest mean final F1 score in the current multi-seed summary, while `last_two_layers` performed very closely at substantially lower communication cost. This does not establish a universal rule, but it does support the central research direction of studying richer partial-transfer strategies as a compromise between local-only learning and full-model exchange.
 
 ## Proposed Method
-The project will be developed in stages.
+The project will be developed in stages, but the early collaborative proof of concept has already been established. The next steps therefore focus less on introducing collaboration for the first time and more on extending, stress-testing, and refining the current setup.
 
-### Phase 1: Stronger Sequential Transfer Experiments
-The existing sequential experiments will be extended to include additional partial-transfer strategies, repeated runs with multiple random seeds, and possibly synthetic concept drift or other non-stationary settings. The goal of this phase is to identify which transfer strategies appear promising enough to carry into a collaborative setting.
+### Phase 1: Consolidation of the Current Collaborative Baseline
+The existing two-client collaborative neural-network setup will be treated as the baseline experimental environment. This phase will focus on verifying reproducibility, clarifying evaluation procedures, and ensuring that the comparison between `local_only`, `last_layer_only`, `last_two_layers`, and `full_transfer` is reported consistently.
 
-### Phase 2: Collaborative Multi-Client Simulation
-A simple collaborative environment will be introduced in which multiple clients receive their own local sequential data streams. Each client will train locally, and a coordinator will be used to compare different strategies such as local-only learning, full-model transfer, and partial-model transfer.
+### Phase 2: Extension to More Challenging Data Conditions
+The collaborative setting will be extended to more realistic conditions, such as stronger client heterogeneity, uneven data availability, non-IID splits, or more explicit sequential change in the incoming data. The goal of this phase is to evaluate whether the observed trade-offs remain meaningful when the environment becomes less controlled.
 
-### Phase 3: Collaborative Partial Transfer
-The collaborative setup will be extended so that only selected parts of a neural network are transferred between participants or via a server-like coordinator. Candidate strategies may include output-layer-only transfer, selected-block transfer, or other layer-based partitions.
+### Phase 3: Richer Partial-Transfer Strategies
+Beyond simple layer-based transfer, the project may explore more selective transfer schemes, such as transferring chosen blocks or other architecture-dependent subsets of parameters. The purpose of this phase is to test whether the communication-performance balance can be improved further beyond the current fixed layer splits.
 
 ### Phase 4: Comparative Evaluation
-The proposed strategies will be compared using predictive metrics and communication-aware metrics. The central objective is not only to maximize predictive accuracy, but to evaluate the trade-off between adaptation and transfer cost.
+All strategies will be compared using predictive metrics together with communication-aware metrics. The central objective is not only to maximize predictive performance, but to evaluate which transfer strategies provide the most useful trade-off between adaptation and communication cost under sequential data arrival.
 
 ## Evaluation Plan
 The proposed approach will be evaluated using:
@@ -61,9 +65,11 @@ The main comparison will be between:
 Additional experiments may examine robustness under non-IID client data, concept drift, or uneven client participation.
 
 ## Bridge from Current Work to Collaborative Learning
-The current notebook does not yet implement a full collaborative multi-client learning system. Instead, it provides a controlled sequential setting in which transfer strategies can be compared before introducing distributed-system complexity. This is useful because it isolates the effect of transferring different parts of a neural network and allows early measurement of the trade-off between predictive performance and communication cost.
+The current repository already goes beyond a purely sequential transfer baseline. It now includes a minimal collaborative learning setup with two clients, a shared evaluation procedure, explicit communication-cost tracking, and multiple transfer conditions ranging from local-only learning to full transfer.
 
-The next step is to extend this setup into a multi-client simulation. In that setting, each client will receive its own local sequential data batches and update a local model. A coordinator or aggregation step will then compare local-only learning, full-model collaborative transfer, and partial neural-network transfer. This staged progression ensures that the final collaborative experiment is grounded in preliminary evidence rather than introduced all at once.
+This means the project no longer needs to justify collaboration only in theoretical terms. Instead, the current proof of concept acts as an initial collaborative baseline on top of which more realistic and more demanding experiments can be built. The main limitation is therefore not the absence of collaboration, but the small scale and simplified nature of the present setup.
+
+The next research step is to extend this collaborative baseline rather than replace it. In particular, future work should test whether the current performance-versus-communication trade-offs remain stable under more heterogeneous client data, more clients, and more difficult sequential conditions.
 
 ## Related Work
 Federated learning provides a framework for collaborative model training without centralizing raw data. McMahan et al. introduced Federated Averaging (FedAvg), showing that communication-efficient decentralized training can be achieved through local client updates followed by server-side averaging. This work is relevant because it establishes communication cost and client heterogeneity as central issues in collaborative learning.
@@ -77,10 +83,13 @@ Federated Continual Learning combines collaborative decentralized learning with 
 ## Expected Contribution
 This work aims to contribute:
 
-1. a staged experimental framework that bridges sequential transfer experiments to collaborative learning,
-2. a prototype setup for comparing full-model and partial-model transfer strategies,
-3. an empirical analysis of the trade-off between predictive performance and communication cost,
-4. a proposal for collaborative learning under sequential data arrival that is grounded in both preliminary experiments and relevant prior literature.
+1. A collaborative learning framework for studying partial neural-network transfer under sequential data arrival,
+2. A prototype experimental setup with explicit communication-cost tracking across multiple transfer strategies,
+3. An empirical analysis of the trade-off between predictive performance and communication cost in a small-scale collaborative setting,
+4. A research direction showing that intermediate transfer strategies may preserve much of the benefit of full-model collaboration while requiring less communication,
+5. A proposal for future work that connects preliminary experimental evidence with broader questions in communication-efficient collaborative and continual learning.
 
 ## Current Scope and Limitations
-This project is currently at the proposal and proof-of-concept stage. The current repository should therefore be understood as preliminary evidence for a larger research direction, not as a completed collaborative learning system. The immediate goal is to show that the direction is technically plausible, motivated by literature, and supported by early experimental results.
+This project is currently at the proposal and proof-of-concept stage. The existing repository already contains a real collaborative neural-network experiment, but the setup remains small-scale and simplified. In particular, the current evidence is based on a limited number of clients, a limited dataset, and a communication-cost proxy based on transferred parameter counts rather than real system-level bandwidth measurements.
+
+For that reason, the current results should be treated as preliminary support for the feasibility of the research direction rather than as definitive evidence. The immediate goal is not to claim a final solution, but to show that the proposed question is technically plausible, aligned with relevant literature, and supported by early empirical results.
